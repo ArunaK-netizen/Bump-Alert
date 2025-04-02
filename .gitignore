@@ -1,0 +1,22 @@
+# Ignore the virtual environment directory
+.venv/
+
+# Ignore the yolov5 cloned repository directory (you can skip this if you want to include yolov5 repo)
+
+
+# Ignore data directory if it's too large to upload (optional)
+Speed_breaker_dataset-2/
+
+# Ignore other temporary or generated files
+*.pyc
+__pycache__/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore model files if they're large (optional)
+*.pth
+
+.idea/
+
+model_training.ipynb
