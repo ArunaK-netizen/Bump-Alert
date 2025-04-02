@@ -89,6 +89,24 @@ BumpAlert/
 └── README.md                 # This file
 ```
 
+## Acknowledgements
+
+This project uses the **Roboflow** platform for dataset management, including data collection, annotation, and export of training datasets for the YOLOv5 model. Roboflow provides an easy-to-use toolset for creating custom datasets with the necessary annotations for training object detection models.
+
+You can create and manage your datasets through Roboflow: [Roboflow Website](https://roboflow.com)
+
+## Dataset
+
+The dataset for speed breaker detection was created using Roboflow. It contains labeled images of painted and unpainted speed breakers, and it was used for training the YOLOv5 model. To use the dataset, you will need to export it from Roboflow in YOLO format and include it in your project.
+
+To download the dataset from Roboflow, follow these steps:
+1. Log in to your [Roboflow account](https://roboflow.com).
+2. Navigate to [Speed Breaker Dataset](https://universe.roboflow.com/speed-breaker-detection-4xev0/speed_breaker_dataset) and click on the "Export" button.
+3. Select "YOLO" as the format for exporting the dataset.
+4. Download and unzip the dataset to use it in this project.
+
+
+
 ## Contributing
 
 1. Fork the repository.
