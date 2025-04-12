@@ -1,76 +1,77 @@
 import customtkinter as ctk
-import torch
-from tkinter import filedialog
-from tkinter import messagebox
+from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
-import numpy as np
+from ultralytics import YOLO
+import os
 import shutil
 
-# Load the trained YOLOv5 model directly
+# Load your YOLOv11 model
 def load_model():
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path='yolov5/runs/train/exp/weights/best.pt')  # Load your custom-trained model
-    return model
+    return YOLO("best.pt")  # Make sure best.pt is in the same folder
 
-# Function to run inference on the uploaded image
+# Run inference and save result with the same name as the input image
 def run_inference(image_path, model):
-    # Load and process the image
-    img = Image.open(image_path)
-    img = img.convert('RGB')
-    img_resized = img.resize((640, 640))  # Resize to match YOLOv5 input size
-    img_tensor = np.array(img_resized)  # Convert to numpy array
+    # Clear temp directory (predictions/result)
+    if os.path.exists("predictions/result"):
+        shutil.rmtree("predictions/result")
 
-    # Run inference
-    results = model(img_tensor)
+    # Run prediction
+    model.predict(
+        source=image_path,
+        save=True,
+        imgsz=640,
+        project="predictions",
+        name="result",
+        exist_ok=True
+    )
 
-    # Save the output image with bounding boxes
-    results.save()  # Saves the output image with bounding boxes in the 'runs/detect/exp' folder
+    # Extract the filename from the input image path (without extension)
+    input_image_name = os.path.basename(image_path)
+    image_name_without_extension = os.path.splitext(input_image_name)[0]
 
-    # Get the output image path
-    output_image_path = 'runs/detect/exp/image0.jpg'  # This is the default output image path
+    # Define output image path with the same name as the input image
+    yolov_output = os.path.join("predictions", "result", f"{image_name_without_extension}.jpg")
+    output_image_path = os.path.join("predictions\\result", f"{image_name_without_extension}.jpg")
+
+    if not os.path.exists(yolov_output):
+        raise FileNotFoundError("Prediction failed: output image not found.")
+
+    # Rename and move the output image to match the input image name
+    shutil.move(yolov_output, output_image_path)
+
     return output_image_path
 
-# Function to load and display the output image
+# Triggered on image upload
 def load_and_display_image():
-    # Open file dialog to select an image
     file_path = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image files", "*.jpg;*.jpeg;*.png")])
     if not file_path:
         return
 
-    # Load the model
-    model = load_model()
+    try:
+        model = load_model()
+        output_image_path = run_inference(file_path, model)
 
-    # Run inference on the uploaded image
-    output_image_path = run_inference(file_path, model)
+        img = Image.open(output_image_path)
+        img = img.resize((640, 640))
+        img_tk = ImageTk.PhotoImage(img)
 
-    # Load the output image
-    img = Image.open(output_image_path)
-    img = img.resize((640, 640))  # Resize to fit the display window
+        output_label.configure(image=img_tk)
+        output_label.image = img_tk
 
-    # Convert the image to a Tkinter-compatible format
-    img_tk = ImageTk.PhotoImage(img)
+        messagebox.showinfo("Detection Complete", f"Detection complete. Output saved as {os.path.basename(output_image_path)}")
 
-    # Display the image in the label
-    output_label.configure(image=img_tk)
-    output_label.image = img_tk  # Keep a reference to the image
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
 
-    # Display success message
-    messagebox.showinfo("Detection Complete", "Detection is complete, and the image is displayed.")
-
-    folder_path = 'runs'
-    shutil.rmtree(folder_path)
-
-# Create the Tkinter UI
+# Tkinter GUI
 root = ctk.CTk()
-root.title("YOLOv5 Object Detection")
+root.title("YOLOv11 Object Detection")
 root.geometry("800x600")
 
-# Create a button to upload the image
 upload_button = ctk.CTkButton(root, text="Upload Image", command=load_and_display_image)
 upload_button.pack(pady=20)
 
-# Create a label to display the output image, initially empty
 output_label = ctk.CTkLabel(root)
 output_label.pack(pady=20)
 
-# Start the Tkinter main loop
 root.mainloop()
